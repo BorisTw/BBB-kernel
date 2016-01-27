@@ -89,6 +89,14 @@ bool system_entering_hibernation(void)
 }
 EXPORT_SYMBOL(system_entering_hibernation);
 
+static bool system_is_hibernating;
+
+bool system_hibernating(void)
+{
+	return system_is_hibernating;
+}
+EXPORT_SYMBOL(system_hibernating);
+
 #ifdef CONFIG_PM_DEBUG
 static void hibernation_debug_sleep(void)
 {
@@ -628,6 +636,7 @@ static int prepare_processes(void)
 int hibernate(void)
 {
 	int error;
+	system_is_hibernating = true;
 
 	mutex_lock(&pm_mutex);
 	/* The snapshot device should not be opened while we're running */
@@ -688,6 +697,7 @@ int hibernate(void)
 	}
 
  Thaw:
+	system_is_hibernating = true;
 	thaw_processes();
  Finish:
 	free_basic_memory_bitmaps();

@@ -261,6 +261,11 @@ long has_wake_lock(int type)
 	return ret;
 }
 
+bool wake_lock_can_suspend(void)
+{
+	return system_hibernating() || !has_wake_lock(WAKE_LOCK_SUSPEND);
+}
+
 static void suspend_backoff(void)
 {
 	pr_info("suspend: too many immediate wakeups, back off\n");
@@ -270,7 +275,7 @@ static void suspend_backoff(void)
 
 static void suspend(struct work_struct *work)
 {
-	int ret;
+	int ret=0;
 	int entry_event_num;
 	struct timespec ts_entry, ts_exit;
 
@@ -285,7 +290,9 @@ static void suspend(struct work_struct *work)
 	if (debug_mask & DEBUG_SUSPEND)
 		pr_info("suspend: enter suspend\n");
 	getnstimeofday(&ts_entry);
-	ret = pm_suspend(requested_suspend_state);
+	//ret = pm_suspend(requested_suspend_state);
+	if (!system_hibernating())
+		ret = pm_suspend(requested_suspend_state);
 	getnstimeofday(&ts_exit);
 
 	if (debug_mask & DEBUG_EXIT_SUSPEND) {
@@ -336,7 +343,8 @@ static DEFINE_TIMER(expire_timer, expire_wake_locks, 0, 0);
 
 static int power_suspend_late(struct device *dev)
 {
-	int ret = has_wake_lock(WAKE_LOCK_SUSPEND) ? -EAGAIN : 0;
+	//int ret = has_wake_lock(WAKE_LOCK_SUSPEND) ? -EAGAIN : 0;
+	int ret = wake_lock_can_suspend() ? 0 : -EAGAIN;
 #ifdef CONFIG_WAKELOCK_STAT
 	wait_for_wakeup = !ret;
 #endif
