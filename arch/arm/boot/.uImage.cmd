@@ -1,0 +1,1 @@
+cmd_arch/arm/boot/uImage := /bin/bash /home/boris/BBB/kernel/scripts/mkuboot.sh -A arm -O linux -T kernel -C none -a 0x80008000 -e 0x80008000 -n 'Linux-3.2.0-gf5c03fd' -d arch/arm/boot/zImage arch/arm/boot/uImage
